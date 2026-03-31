@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "corepack enable && pnpm install --frozen-lockfile && pnpm build",
+  "buildCommand": "corepack enable && pnpm install --frozen-lockfile && pnpm turbo run build --filter=@formbricks/web",
   "outputDirectory": "apps/web/.next",
   "framework": "nextjs",
   "installCommand": "echo 'install handled in buildCommand'"
