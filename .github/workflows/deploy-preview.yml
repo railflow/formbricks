@@ -21,6 +21,9 @@ jobs:
         with:
           node-version: 22
 
+      - name: Enable pnpm via corepack
+        run: corepack enable pnpm
+
       - name: Install Vercel CLI
         run: npm install -g vercel
 
