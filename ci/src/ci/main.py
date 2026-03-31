@@ -21,6 +21,12 @@ class Ci:
             .with_exec(["corepack", "enable"])
             .with_mounted_directory("/app", src)
             .with_workdir("/app")
+            # Dummy env vars required by @t3-oss/env validation in tests/build
+            .with_env_variable("DATABASE_URL", "postgresql://localhost:5432/formbricks")
+            .with_env_variable("ENCRYPTION_KEY", "0".rjust(64, "0"))
+            .with_env_variable("NEXTAUTH_SECRET", "test-secret")
+            .with_env_variable("NEXTAUTH_URL", "http://localhost:3000")
+            .with_env_variable("WEBAPP_URL", "http://localhost:3000")
             # Install deps — cache the pnpm store for speed
             .with_mounted_cache("/root/.local/share/pnpm/store", dag.cache_volume("pnpm-store"))
             .with_exec(["pnpm", "install", "--frozen-lockfile"])
@@ -49,7 +55,7 @@ class Ci:
         """Build the Formbricks app."""
         return await (
             self._base(src)
-            .with_exec(["pnpm", "build"])
+            .with_exec(["pnpm", "build", "--filter=@formbricks/web..."])
             .stdout()
         )
 
@@ -66,6 +72,6 @@ class Ci:
         await test_result
 
         # Build last
-        await base.with_exec(["pnpm", "build"]).stdout()
+        await base.with_exec(["pnpm", "build", "--filter=@formbricks/web..."]).stdout()
 
         return "All CI checks passed."
