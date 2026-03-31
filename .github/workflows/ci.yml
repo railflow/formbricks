@@ -22,6 +22,7 @@ jobs:
       - name: Run CI via Dagger
         uses: dagger/dagger-for-github@v7
         with:
+          version: "0.20.3"
           verb: call
           module: ci
           args: all --src .
