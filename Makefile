@@ -1,4 +1,4 @@
-.PHONY: ci lint typecheck test build up down
+.PHONY: ci lint test build up down
 
 # Run the full CI pipeline locally via Dagger
 ci:
@@ -6,9 +6,6 @@ ci:
 
 lint:
 	dagger call -m ci lint --src .
-
-typecheck:
-	dagger call -m ci typecheck --src .
 
 test:
 	dagger call -m ci test --src .

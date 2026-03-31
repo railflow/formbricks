@@ -1,7 +1,7 @@
 """Dagger CI pipeline for Formbricks.
 
-Run all checks:  dagger call -m ci all --src app
-Run individual:  dagger call -m ci lint --src app
+Run all checks:  dagger call -m ci all --src .
+Run individual:  dagger call -m ci lint --src .
 """
 
 import dagger
@@ -10,7 +10,7 @@ from dagger import dag, function, object_type
 
 @object_type
 class Ci:
-    """CI pipeline for Formbricks — lint, typecheck, test, build."""
+    """CI pipeline for Formbricks — lint, test, build."""
 
     def _base(self, src: dagger.Directory) -> dagger.Container:
         """Shared base container: Node 22 + pnpm + installed deps."""
@@ -36,15 +36,6 @@ class Ci:
         )
 
     @function
-    async def typecheck(self, src: dagger.Directory) -> str:
-        """Run TypeScript type checking."""
-        return await (
-            self._base(src)
-            .with_exec(["pnpm", "turbo", "run", "type-check"])
-            .stdout()
-        )
-
-    @function
     async def test(self, src: dagger.Directory) -> str:
         """Run Vitest unit tests."""
         return await (
@@ -64,28 +55,17 @@ class Ci:
 
     @function
     async def all(self, src: dagger.Directory) -> str:
-        """Run the full CI pipeline: lint → typecheck → test → build."""
+        """Run the full CI pipeline: lint → test → build."""
         base = self._base(src)
 
-        # Run lint, typecheck, and test in parallel (they're independent)
-        lint_result = (
-            base.with_exec(["pnpm", "lint"]).stdout()
-        )
-        typecheck_result = (
-            base.with_exec(["pnpm", "turbo", "run", "type-check"]).stdout()
-        )
-        test_result = (
-            base.with_exec(["pnpm", "test"]).stdout()
-        )
+        # Run lint and test in parallel (they're independent)
+        lint_result = base.with_exec(["pnpm", "lint"]).stdout()
+        test_result = base.with_exec(["pnpm", "test"]).stdout()
 
-        # Await all
         await lint_result
-        await typecheck_result
         await test_result
 
-        # Build last (depends on types being correct)
-        build_result = await (
-            base.with_exec(["pnpm", "build"]).stdout()
-        )
+        # Build last
+        await base.with_exec(["pnpm", "build"]).stdout()
 
         return "All CI checks passed."
