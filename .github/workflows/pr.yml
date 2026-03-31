@@ -9,6 +9,8 @@ permissions:
   id-token: write
 
 on:
+  push:
+    branches: [develop]
   pull_request:
   merge_group:
   workflow_dispatch:
